@@ -724,6 +724,7 @@
     50% { box-shadow: 0 0 20px 0 rgba(0,229,255,0.08); }
   }
 
+
   /* Projects */
   .projects-grid {
     display: grid;
@@ -821,13 +822,14 @@
   </ul>
 </nav>
 
+<!-- Hero -->
 <section id="hero">
   <div class="hero-eyebrow">Mohamed Mazen Elagamy</div>
   <h1 class="hero-name">
     Computer<br>
     <span class="line2">Engineer.</span>
   </h1>
-  <div class="hero-title">Machine Learning · Cybersecurity · Software</div>
+  <div class="hero-title">AI &amp; Data Science &nbsp;—&nbsp; Cybersecurity &nbsp;—&nbsp; Software</div>
   <p class="hero-desc">
     Computer Engineering undergraduate at AASTMT — building at the intersection of AI, security, and intelligent systems. Driven by deep curiosity for how machines learn and how systems can be hardened against the unknown.
   </p>
@@ -841,6 +843,7 @@
   </div>
 </section>
 
+<!-- Stats strip -->
 <div class="stats-strip" id="stats-strip">
   <div class="stat-item">
     <span class="stat-num">3.97</span>
@@ -860,6 +863,7 @@
   </div>
 </div>
 
+<!-- About -->
 <section id="about">
   <div class="sec-header">
     <div class="sec-tag">About</div>
@@ -902,6 +906,7 @@
   </div>
 </section>
 
+<!-- Skills -->
 <section id="skills">
   <div class="sec-header">
     <div class="sec-tag">Technical Skills</div>
@@ -976,6 +981,7 @@
   </div>
 </section>
 
+<!-- Experience -->
 <section id="experience">
   <div class="sec-header">
     <div class="sec-tag">Experience & Certifications</div>
@@ -1047,6 +1053,7 @@
   </div>
 </section>
 
+<!-- Education -->
 <section id="education">
   <div class="sec-header">
     <div class="sec-tag">Education</div>
@@ -1068,6 +1075,7 @@
   </div>
 </section>
 
+<!-- Projects -->
 <section id="projects">
   <div class="sec-header">
     <div class="sec-tag">Projects</div>
@@ -1145,6 +1153,7 @@
   </div>
 </section>
 
+<!-- Contact -->
 <section id="contact">
   <div class="sec-header" style="text-align:center;">
     <div class="sec-tag" style="justify-content:center;">Contact</div>
@@ -1195,6 +1204,7 @@ function animCursor() {
 }
 animCursor();
 
+// Neural network canvas background — with scroll parallax
 const canvas = document.getElementById('neural-bg');
 const ctx = canvas.getContext('2d');
 let nodes = [], W, H;
@@ -1208,6 +1218,7 @@ resize();
 window.addEventListener('resize', resize);
 window.addEventListener('scroll', () => { scrollY = window.scrollY; });
 
+// More nodes, larger connection radius for bigger visual impact
 for (let i = 0; i < 120; i++) {
   nodes.push({
     x: Math.random() * (typeof W !== 'undefined' ? W : window.innerWidth),
@@ -1233,7 +1244,7 @@ function drawNeural() {
     if (n.y < 0 || n.y > H) n.vy *= -1;
   });
 
-  
+  // Draw connections
   for (let i = 0; i < nodes.length; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
       const ay = nodes[i].y - parallaxShift * nodes[i].depth;
@@ -1253,11 +1264,11 @@ function drawNeural() {
     }
   }
 
-  
+  // Draw nodes
   nodes.forEach(n => {
     const py = n.y - parallaxShift * n.depth;
     const pulse = 0.5 + 0.5 * Math.sin(n.pulse);
-    
+    // Glow
     const grd = ctx.createRadialGradient(n.x, py, 0, n.x, py, n.r * 3);
     grd.addColorStop(0, `rgba(0, 212, 255, ${0.5 + pulse * 0.4})`);
     grd.addColorStop(1, `rgba(0, 212, 255, 0)`);
@@ -1265,7 +1276,7 @@ function drawNeural() {
     ctx.arc(n.x, py, n.r * 3, 0, Math.PI * 2);
     ctx.fillStyle = grd;
     ctx.fill();
-    
+    // Core dot
     ctx.beginPath();
     ctx.arc(n.x, py, n.r, 0, Math.PI * 2);
     ctx.fillStyle = `rgba(0, 212, 255, ${0.8 + pulse * 0.2})`;
@@ -1276,6 +1287,7 @@ function drawNeural() {
 }
 drawNeural();
 
+// Scroll reveal
 const observerOptions = { threshold: 0.15 };
 const observer = new IntersectionObserver(entries => {
   entries.forEach(entry => {
@@ -1294,10 +1306,12 @@ document.querySelectorAll('.about-text p').forEach((p, i) => {
   observer.observe(p);
 });
 
+// Stagger exp items
 document.querySelectorAll('.exp-item').forEach((el, i) => {
   el.style.transitionDelay = (i * 0.1) + 's';
 });
 
+// Counter animation for stats
 function animCounter(el, target, isFloat, suffix, duration = 1500) {
   const decimals = target === 3.97 ? 2 : 1;
   const start = performance.now();
