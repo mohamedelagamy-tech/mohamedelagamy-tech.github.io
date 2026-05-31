@@ -121,6 +121,7 @@
     justify-content: center;
     max-width: 100%;
     padding: 0 8vw;
+    padding-top: 6rem; /* ← pushes content below the navbar */
     position: relative;
     overflow: hidden;
   }
@@ -790,7 +791,7 @@
   @media (max-width: 768px) {
     nav { padding: 1rem 1.5rem; }
     .nav-links { display: none; }
-    #hero { padding: 0 1.5rem; }
+    #hero { padding: 5rem 1.5rem 0; }
     section { padding: 4rem 1.5rem; }
     .stats-strip { grid-template-columns: repeat(2, 1fr); margin: 0 1.5rem 3rem; }
     .about-grid { grid-template-columns: 1fr; gap: 2rem; }
@@ -1218,7 +1219,6 @@ resize();
 window.addEventListener('resize', resize);
 window.addEventListener('scroll', () => { scrollY = window.scrollY; });
 
-// More nodes, larger connection radius for bigger visual impact
 for (let i = 0; i < 120; i++) {
   nodes.push({
     x: Math.random() * (typeof W !== 'undefined' ? W : window.innerWidth),
@@ -1244,7 +1244,6 @@ function drawNeural() {
     if (n.y < 0 || n.y > H) n.vy *= -1;
   });
 
-  // Draw connections
   for (let i = 0; i < nodes.length; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
       const ay = nodes[i].y - parallaxShift * nodes[i].depth;
@@ -1264,11 +1263,9 @@ function drawNeural() {
     }
   }
 
-  // Draw nodes
   nodes.forEach(n => {
     const py = n.y - parallaxShift * n.depth;
     const pulse = 0.5 + 0.5 * Math.sin(n.pulse);
-    // Glow
     const grd = ctx.createRadialGradient(n.x, py, 0, n.x, py, n.r * 3);
     grd.addColorStop(0, `rgba(0, 212, 255, ${0.5 + pulse * 0.4})`);
     grd.addColorStop(1, `rgba(0, 212, 255, 0)`);
@@ -1276,7 +1273,6 @@ function drawNeural() {
     ctx.arc(n.x, py, n.r * 3, 0, Math.PI * 2);
     ctx.fillStyle = grd;
     ctx.fill();
-    // Core dot
     ctx.beginPath();
     ctx.arc(n.x, py, n.r, 0, Math.PI * 2);
     ctx.fillStyle = `rgba(0, 212, 255, ${0.8 + pulse * 0.2})`;
@@ -1306,12 +1302,10 @@ document.querySelectorAll('.about-text p').forEach((p, i) => {
   observer.observe(p);
 });
 
-// Stagger exp items
 document.querySelectorAll('.exp-item').forEach((el, i) => {
   el.style.transitionDelay = (i * 0.1) + 's';
 });
 
-// Counter animation for stats
 function animCounter(el, target, isFloat, suffix, duration = 1500) {
   const decimals = target === 3.97 ? 2 : 1;
   const start = performance.now();
