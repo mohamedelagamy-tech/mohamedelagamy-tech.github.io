@@ -41,6 +41,38 @@
     cursor: none;
   }
 
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent2);
+    outline-offset: 3px;
+  }
+
+  /* Boot sequence */
+  .boot {
+    position: fixed; inset: 0;
+    z-index: 500;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.6s ease;
+  }
+  .boot.gone { opacity: 0; pointer-events: none; }
+  .boot-inner { text-align: center; }
+  .boot-nodes { display: flex; gap: 0.6rem; justify-content: center; margin-bottom: 1.2rem; }
+  .boot-nodes span {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent2);
+    opacity: 0.25;
+    animation: bootPulse 1.1s ease-in-out infinite;
+  }
+  .boot-nodes span:nth-child(2) { animation-delay: 0.15s; }
+  .boot-nodes span:nth-child(3) { animation-delay: 0.3s; }
+  .boot-nodes span:nth-child(4) { animation-delay: 0.45s; }
+  @keyframes bootPulse { 0%, 100% { opacity: 0.25; transform: scale(1); } 50% { opacity: 1; transform: scale(1.3); } }
+  .boot-text { font-size: 0.72rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--text2); margin-bottom: 0.7rem; }
+  .boot-status { font-size: 0.68rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--accent2); opacity: 0; transition: opacity 0.4s; }
+  .boot-status.show { opacity: 1; }
+
   /* Custom cursor */
   .cursor {
     width: 12px; height: 12px;
@@ -72,8 +104,17 @@
     top: 0; left: 0;
     width: 100%; height: 100%;
     z-index: 0;
-    opacity: 0.75;
+    opacity: 0.8;
   }
+
+  /* Reusable neural glyph */
+  .node-glyph { overflow: visible; display: block; }
+  .ng-line { stroke: var(--border2); stroke-width: 1; transition: stroke 0.3s; }
+  .ng-dot { fill: var(--accent); transition: fill 0.3s, r 0.3s; }
+  .ng-dot-main { fill: var(--accent2); animation: ngPulse 2.4s ease-in-out infinite; }
+  @keyframes ngPulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+  .skill-group:hover .ng-line, .project-card:hover .ng-line { stroke: var(--accent2); }
+  .skill-group:hover .ng-dot, .project-card:hover .ng-dot { fill: var(--accent2); }
 
   /* Nav */
   nav {
@@ -95,6 +136,9 @@
   .nav-logo span { color: var(--accent2); }
   .nav-links { display: flex; gap: 2.2rem; list-style: none; }
   .nav-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
     font-size: 0.72rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
@@ -103,6 +147,21 @@
     transition: color 0.2s;
   }
   .nav-links a:hover { color: var(--accent2); }
+  .nav-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    border: 1px solid var(--text3);
+    background: transparent;
+    transition: background 0.25s, border-color 0.25s, box-shadow 0.25s;
+    flex-shrink: 0;
+  }
+  .nav-links a.active { color: var(--accent2); }
+  .nav-links a.active .nav-dot,
+  .nav-links a:hover .nav-dot {
+    background: var(--accent2);
+    border-color: var(--accent2);
+    box-shadow: 0 0 6px var(--accent2);
+  }
 
   /* Sections */
   section {
@@ -121,7 +180,6 @@
     justify-content: center;
     max-width: 100%;
     padding: 0 8vw;
-    padding-top: 6rem; /* ← pushes content below the navbar */
     position: relative;
     overflow: hidden;
   }
@@ -284,12 +342,22 @@
 
   /* Section headers */
   .sec-header {
+    position: relative;
     margin-bottom: 4rem;
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.8s, transform 0.8s;
   }
   .sec-header.visible { opacity: 1; transform: translateY(0); }
+  .sec-header::after {
+    content: '';
+    position: absolute;
+    left: 0; bottom: -1.2rem;
+    height: 1px; width: 0;
+    background: linear-gradient(to right, var(--accent2), transparent);
+    transition: width 1.2s ease 0.2s;
+  }
+  .sec-header.visible::after { width: 55%; }
   .sec-tag {
     font-size: 0.68rem;
     letter-spacing: 0.25em;
@@ -407,7 +475,7 @@
   .skill-group:hover { border-color: var(--border2); transform: translateY(-4px); }
   .skill-group:hover::after { opacity: 1; }
   .skill-group-icon {
-    font-size: 1.4rem;
+    display: inline-flex;
     margin-bottom: 1rem;
   }
   .skill-group h4 {
@@ -442,6 +510,18 @@
     width: 1px;
     background: linear-gradient(to bottom, var(--accent), var(--accent3), transparent);
   }
+  .exp-signal {
+    position: absolute;
+    left: -2px; top: 0;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent2);
+    box-shadow: 0 0 8px 2px var(--accent2);
+    opacity: 0;
+    transition: opacity 0.4s;
+    pointer-events: none;
+  }
+  .exp-signal.active { opacity: 1; }
   .exp-item {
     position: relative;
     margin-bottom: 3.5rem;
@@ -458,8 +538,10 @@
     background: var(--bg);
     border: 2px solid var(--accent);
     border-radius: 50%;
+    transition: box-shadow 0.4s, background 0.4s;
   }
   .exp-dot.special { background: var(--accent); }
+  .exp-item.visible .exp-dot { box-shadow: 0 0 10px 1px rgba(0,212,255,0.5); }
   .exp-year {
     font-size: 0.68rem;
     letter-spacing: 0.15em;
@@ -571,9 +653,21 @@
 
   /* Contact */
   #contact {
+    position: relative;
     text-align: center;
     padding-bottom: 8rem;
   }
+  .contact-converge {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.55;
+    pointer-events: none;
+  }
+  .contact-converge svg { width: 100%; height: 100%; }
+  .cv-line { stroke: var(--border2); stroke-width: 1; }
+  .cv-core { fill: var(--accent2); animation: corePulse 2.4s ease-in-out infinite; }
+  @keyframes corePulse { 0%, 100% { opacity: 0.6; r: 4; } 50% { opacity: 1; r: 6; } }
   .contact-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -582,6 +676,8 @@
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.8s, transform 0.8s;
+    position: relative;
+    z-index: 1;
   }
   .contact-grid.visible { opacity: 1; transform: translateY(0); }
   .contact-item {
@@ -725,7 +821,6 @@
     50% { box-shadow: 0 0 20px 0 rgba(0,229,255,0.08); }
   }
 
-
   /* Projects */
   .projects-grid {
     display: grid;
@@ -762,8 +857,18 @@
   .project-card-top { display: flex; justify-content: space-between; align-items: center; }
   .project-lang { display: flex; align-items: center; gap: 0.5rem; font-size: 0.72rem; color: var(--text3); letter-spacing: 0.04em; }
   .lang-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-  .project-arrow { font-size: 1.2rem; color: var(--text3); transition: color 0.2s, transform 0.2s; }
+  .project-signal { display: flex; align-items: center; gap: 0.5rem; }
+  .project-arrow { position: relative; font-size: 1.2rem; color: var(--text3); transition: color 0.2s, transform 0.2s; }
+  .project-arrow::after {
+    content: '';
+    position: absolute;
+    left: -9px; top: 50%;
+    width: 0; height: 1px;
+    background: var(--accent2);
+    transition: width 0.3s;
+  }
   .project-card:hover .project-arrow { color: var(--accent2); transform: translate(3px, -3px); }
+  .project-card:hover .project-arrow::after { width: 9px; }
   .project-title {
     font-family: 'Syne', sans-serif;
     font-size: 1rem;
@@ -791,7 +896,7 @@
   @media (max-width: 768px) {
     nav { padding: 1rem 1.5rem; }
     .nav-links { display: none; }
-    #hero { padding: 5rem 1.5rem 0; }
+    #hero { padding: 0 1.5rem; }
     section { padding: 4rem 1.5rem; }
     .stats-strip { grid-template-columns: repeat(2, 1fr); margin: 0 1.5rem 3rem; }
     .about-grid { grid-template-columns: 1fr; gap: 2rem; }
@@ -802,24 +907,53 @@
     body { cursor: auto; }
     .cursor, .cursor-ring { display: none; }
   }
+
+  @media (pointer: coarse) {
+    body { cursor: auto; }
+    .cursor, .cursor-ring { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+    .hero-eyebrow, .hero-name, .hero-title, .hero-desc, .hero-ctas, .hero-scroll {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+    .boot { display: none !important; }
+  }
 </style>
 </head>
 <body>
 
+<noscript><style>.boot{display:none!important;}.cursor,.cursor-ring{display:none!important;}body{cursor:auto!important;}</style></noscript>
+
+<div class="boot" id="boot" aria-hidden="true">
+  <div class="boot-inner">
+    <div class="boot-nodes"><span></span><span></span><span></span><span></span></div>
+    <div class="boot-text">Initializing neural network</div>
+    <div class="boot-status" id="bootStatus">Network online</div>
+  </div>
+</div>
+
 <div class="cursor" id="cursor"></div>
 <div class="cursor-ring" id="cursor-ring"></div>
 
-<canvas id="neural-bg"></canvas>
+<canvas id="neural-bg" aria-hidden="true"></canvas>
 
 <nav>
   <a href="#hero" class="nav-logo">MME<span>.</span></a>
   <ul class="nav-links">
-    <li><a href="#about">About</a></li>
-    <li><a href="#skills">Skills</a></li>
-    <li><a href="#experience">Experience</a></li>
-    <li><a href="#education">Education</a></li>
-    <li><a href="#projects">Projects</a></li>
-    <li><a href="#contact">Contact</a></li>
+    <li><a href="#about"><span class="nav-dot"></span>About</a></li>
+    <li><a href="#skills"><span class="nav-dot"></span>Skills</a></li>
+    <li><a href="#experience"><span class="nav-dot"></span>Experience</a></li>
+    <li><a href="#education"><span class="nav-dot"></span>Education</a></li>
+    <li><a href="#projects"><span class="nav-dot"></span>Projects</a></li>
+    <li><a href="#contact"><span class="nav-dot"></span>Contact</a></li>
   </ul>
 </nav>
 
@@ -830,7 +964,7 @@
     Computer<br>
     <span class="line2">Engineer.</span>
   </h1>
-  <div class="hero-title">AI &amp; Data Science &nbsp;—&nbsp; Cybersecurity &nbsp;—&nbsp; Software</div>
+  <div class="hero-title">Machine Learning · Cybersecurity · Software</div>
   <p class="hero-desc">
     Computer Engineering undergraduate at AASTMT — building at the intersection of AI, security, and intelligent systems. Driven by deep curiosity for how machines learn and how systems can be hardened against the unknown.
   </p>
@@ -915,7 +1049,16 @@
   </div>
   <div class="skills-container" id="skills-container">
     <div class="skill-group">
-      <div class="skill-group-icon">🧠</div>
+      <div class="skill-group-icon">
+        <svg class="node-glyph" viewBox="0 0 40 24" width="30" height="18" aria-hidden="true">
+          <line x1="6" y1="18" x2="20" y2="6" class="ng-line"/>
+          <line x1="20" y1="6" x2="34" y2="18" class="ng-line"/>
+          <line x1="6" y1="18" x2="34" y2="18" class="ng-line"/>
+          <circle cx="6" cy="18" r="2.4" class="ng-dot"/>
+          <circle cx="20" cy="6" r="3" class="ng-dot ng-dot-main"/>
+          <circle cx="34" cy="18" r="2.4" class="ng-dot"/>
+        </svg>
+      </div>
       <h4>AI & Data Science</h4>
       <div class="skill-tags">
         <span class="skill-tag">Python</span>
@@ -929,7 +1072,16 @@
       </div>
     </div>
     <div class="skill-group">
-      <div class="skill-group-icon">🔐</div>
+      <div class="skill-group-icon">
+        <svg class="node-glyph" viewBox="0 0 40 24" width="30" height="18" aria-hidden="true">
+          <line x1="6" y1="18" x2="20" y2="6" class="ng-line"/>
+          <line x1="20" y1="6" x2="34" y2="18" class="ng-line"/>
+          <line x1="6" y1="18" x2="34" y2="18" class="ng-line"/>
+          <circle cx="6" cy="18" r="2.4" class="ng-dot"/>
+          <circle cx="20" cy="6" r="3" class="ng-dot ng-dot-main"/>
+          <circle cx="34" cy="18" r="2.4" class="ng-dot"/>
+        </svg>
+      </div>
       <h4>Cybersecurity</h4>
       <div class="skill-tags">
         <span class="skill-tag">Network Security</span>
@@ -939,7 +1091,16 @@
       </div>
     </div>
     <div class="skill-group">
-      <div class="skill-group-icon">⚙️</div>
+      <div class="skill-group-icon">
+        <svg class="node-glyph" viewBox="0 0 40 24" width="30" height="18" aria-hidden="true">
+          <line x1="6" y1="18" x2="20" y2="6" class="ng-line"/>
+          <line x1="20" y1="6" x2="34" y2="18" class="ng-line"/>
+          <line x1="6" y1="18" x2="34" y2="18" class="ng-line"/>
+          <circle cx="6" cy="18" r="2.4" class="ng-dot"/>
+          <circle cx="20" cy="6" r="3" class="ng-dot ng-dot-main"/>
+          <circle cx="34" cy="18" r="2.4" class="ng-dot"/>
+        </svg>
+      </div>
       <h4>Programming</h4>
       <div class="skill-tags">
         <span class="skill-tag">C / C++</span>
@@ -949,7 +1110,16 @@
       </div>
     </div>
     <div class="skill-group">
-      <div class="skill-group-icon">🛡️</div>
+      <div class="skill-group-icon">
+        <svg class="node-glyph" viewBox="0 0 40 24" width="30" height="18" aria-hidden="true">
+          <line x1="6" y1="18" x2="20" y2="6" class="ng-line"/>
+          <line x1="20" y1="6" x2="34" y2="18" class="ng-line"/>
+          <line x1="6" y1="18" x2="34" y2="18" class="ng-line"/>
+          <circle cx="6" cy="18" r="2.4" class="ng-dot"/>
+          <circle cx="20" cy="6" r="3" class="ng-dot ng-dot-main"/>
+          <circle cx="34" cy="18" r="2.4" class="ng-dot"/>
+        </svg>
+      </div>
       <h4>Security & Systems</h4>
       <div class="skill-tags">
         <span class="skill-tag">Network Security</span>
@@ -960,7 +1130,16 @@
       </div>
     </div>
     <div class="skill-group">
-      <div class="skill-group-icon">📊</div>
+      <div class="skill-group-icon">
+        <svg class="node-glyph" viewBox="0 0 40 24" width="30" height="18" aria-hidden="true">
+          <line x1="6" y1="18" x2="20" y2="6" class="ng-line"/>
+          <line x1="20" y1="6" x2="34" y2="18" class="ng-line"/>
+          <line x1="6" y1="18" x2="34" y2="18" class="ng-line"/>
+          <circle cx="6" cy="18" r="2.4" class="ng-dot"/>
+          <circle cx="20" cy="6" r="3" class="ng-dot ng-dot-main"/>
+          <circle cx="34" cy="18" r="2.4" class="ng-dot"/>
+        </svg>
+      </div>
       <h4>Data Analysis</h4>
       <div class="skill-tags">
         <span class="skill-tag">Data Preprocessing</span>
@@ -971,7 +1150,16 @@
       </div>
     </div>
     <div class="skill-group">
-      <div class="skill-group-icon">🛠️</div>
+      <div class="skill-group-icon">
+        <svg class="node-glyph" viewBox="0 0 40 24" width="30" height="18" aria-hidden="true">
+          <line x1="6" y1="18" x2="20" y2="6" class="ng-line"/>
+          <line x1="20" y1="6" x2="34" y2="18" class="ng-line"/>
+          <line x1="6" y1="18" x2="34" y2="18" class="ng-line"/>
+          <circle cx="6" cy="18" r="2.4" class="ng-dot"/>
+          <circle cx="20" cy="6" r="3" class="ng-dot ng-dot-main"/>
+          <circle cx="34" cy="18" r="2.4" class="ng-dot"/>
+        </svg>
+      </div>
       <h4>Tools & Other</h4>
       <div class="skill-tags">
         <span class="skill-tag">MS Office Suite</span>
@@ -989,6 +1177,7 @@
     <h2 class="sec-title">What I've done.</h2>
   </div>
   <div class="exp-timeline">
+    <div class="exp-signal" id="expSignal"></div>
 
     <div class="exp-item" id="exp1">
       <div class="exp-dot special"></div>
@@ -998,7 +1187,6 @@
       <ul class="exp-bullets">
         <li>Completed intensive AI & ML training covering foundational concepts and modern workflows.</li>
         <li>Implemented ML algorithms and performed data preprocessing, analysis, and visualization using Python.</li>
-        <li>Applied model training, testing, and evaluation techniques on real structured datasets.</li>
         <li>Gained hands-on experience with supervised and unsupervised learning models.</li>
         <li>Developed a Python-based ML pipeline to automate preprocessing, training, and evaluation on any dataset.</li>
       </ul>
@@ -1089,7 +1277,16 @@
         <div class="project-lang">
           <span class="lang-dot" style="background:#f37626;"></span> Jupyter Notebook
         </div>
-        <div class="project-arrow">↗</div>
+        <div class="project-signal">
+          <svg class="node-glyph" viewBox="0 0 40 24" width="22" height="13" aria-hidden="true">
+            <line x1="6" y1="18" x2="20" y2="6" class="ng-line"/>
+            <line x1="20" y1="6" x2="34" y2="18" class="ng-line"/>
+            <circle cx="6" cy="18" r="2.4" class="ng-dot"/>
+            <circle cx="20" cy="6" r="3" class="ng-dot ng-dot-main"/>
+            <circle cx="34" cy="18" r="2.4" class="ng-dot"/>
+          </svg>
+          <div class="project-arrow">↗</div>
+        </div>
       </div>
       <h3 class="project-title">Modular ML Pipeline</h3>
       <p class="project-desc">End-to-end supervised machine learning pipeline with data preprocessing, feature engineering, model training, and evaluation for classification and regression tasks using Scikit-Learn.</p>
@@ -1106,7 +1303,16 @@
         <div class="project-lang">
           <span class="lang-dot" style="background:#f37626;"></span> Jupyter Notebook
         </div>
-        <div class="project-arrow">↗</div>
+        <div class="project-signal">
+          <svg class="node-glyph" viewBox="0 0 40 24" width="22" height="13" aria-hidden="true">
+            <line x1="6" y1="18" x2="20" y2="6" class="ng-line"/>
+            <line x1="20" y1="6" x2="34" y2="18" class="ng-line"/>
+            <circle cx="6" cy="18" r="2.4" class="ng-dot"/>
+            <circle cx="20" cy="6" r="3" class="ng-dot ng-dot-main"/>
+            <circle cx="34" cy="18" r="2.4" class="ng-dot"/>
+          </svg>
+          <div class="project-arrow">↗</div>
+        </div>
       </div>
       <h3 class="project-title">Spotify Smart Recommendation System</h3>
       <p class="project-desc">End-to-end music recommendation engine using Spotify data. Features content-based filtering, mood-aware search, and similarity modeling with an interactive UI.</p>
@@ -1123,7 +1329,16 @@
         <div class="project-lang">
           <span class="lang-dot" style="background:#3178c6;"></span> TypeScript
         </div>
-        <div class="project-arrow">↗</div>
+        <div class="project-signal">
+          <svg class="node-glyph" viewBox="0 0 40 24" width="22" height="13" aria-hidden="true">
+            <line x1="6" y1="18" x2="20" y2="6" class="ng-line"/>
+            <line x1="20" y1="6" x2="34" y2="18" class="ng-line"/>
+            <circle cx="6" cy="18" r="2.4" class="ng-dot"/>
+            <circle cx="20" cy="6" r="3" class="ng-dot ng-dot-main"/>
+            <circle cx="34" cy="18" r="2.4" class="ng-dot"/>
+          </svg>
+          <div class="project-arrow">↗</div>
+        </div>
       </div>
       <h3 class="project-title">Gesture-Controlled Spotify</h3>
       <p class="project-desc">A gesture-recognition interface that lets users control Spotify playback with hand movements — bridging computer vision and real-time music control.</p>
@@ -1139,7 +1354,16 @@
         <div class="project-lang">
           <span class="lang-dot" style="background:#b07219;"></span> Java
         </div>
-        <div class="project-arrow">↗</div>
+        <div class="project-signal">
+          <svg class="node-glyph" viewBox="0 0 40 24" width="22" height="13" aria-hidden="true">
+            <line x1="6" y1="18" x2="20" y2="6" class="ng-line"/>
+            <line x1="20" y1="6" x2="34" y2="18" class="ng-line"/>
+            <circle cx="6" cy="18" r="2.4" class="ng-dot"/>
+            <circle cx="20" cy="6" r="3" class="ng-dot ng-dot-main"/>
+            <circle cx="34" cy="18" r="2.4" class="ng-dot"/>
+          </svg>
+          <div class="project-arrow">↗</div>
+        </div>
       </div>
       <h3 class="project-title">Smart Hospital Management System</h3>
       <p class="project-desc">A full-featured hospital management system built with Java and Spring Boot, backed by SQLite. Handles patient records, discharge workflows, and hospital operations end-to-end.</p>
@@ -1156,6 +1380,15 @@
 
 <!-- Contact -->
 <section id="contact">
+  <div class="contact-converge" aria-hidden="true">
+    <svg viewBox="0 0 400 200" preserveAspectRatio="none">
+      <line x1="0" y1="0" x2="200" y2="100" class="cv-line"/>
+      <line x1="400" y1="0" x2="200" y2="100" class="cv-line"/>
+      <line x1="0" y1="200" x2="200" y2="100" class="cv-line"/>
+      <line x1="400" y1="200" x2="200" y2="100" class="cv-line"/>
+      <circle cx="200" cy="100" r="4" class="cv-core"/>
+    </svg>
+  </div>
   <div class="sec-header" style="text-align:center;">
     <div class="sec-tag" style="justify-content:center;">Contact</div>
     <h2 class="sec-title">Let's connect.</h2>
@@ -1190,6 +1423,35 @@
 </footer>
 
 <script>
+// ---------- Boot sequence ----------
+(function () {
+  const boot = document.getElementById('boot');
+  if (!boot) return;
+  // Absolute failsafe: whatever else happens, never let the boot overlay
+  // block the page for more than ~2.5s.
+  const hardTimeout = setTimeout(() => { boot.style.display = 'none'; }, 2500);
+  try {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let seenBefore = false;
+    try { seenBefore = !!sessionStorage.getItem('bootSeen'); } catch (e) { /* storage may be blocked */ }
+    if (reduced || seenBefore) {
+      boot.style.display = 'none';
+      clearTimeout(hardTimeout);
+      return;
+    }
+    const status = document.getElementById('bootStatus');
+    setTimeout(() => status && status.classList.add('show'), 650);
+    setTimeout(() => {
+      boot.classList.add('gone');
+      try { sessionStorage.setItem('bootSeen', '1'); } catch (e) { /* ignore */ }
+    }, 1150);
+    setTimeout(() => { boot.style.display = 'none'; clearTimeout(hardTimeout); }, 1750);
+  } catch (e) {
+    boot.style.display = 'none';
+  }
+})();
+
+// ---------- Custom cursor ----------
 const cursor = document.getElementById('cursor');
 const ring = document.getElementById('cursor-ring');
 let mx = 0, my = 0, rx = 0, ry = 0;
@@ -1205,91 +1467,191 @@ function animCursor() {
 }
 animCursor();
 
-// Neural network canvas background — with scroll parallax
-const canvas = document.getElementById('neural-bg');
-const ctx = canvas.getContext('2d');
-let nodes = [], W, H;
-let scrollY = 0;
+// ---------- Living neural network engine ----------
+(function () {
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isMobile = window.matchMedia('(max-width: 768px)').matches;
+  const isCoarse = window.matchMedia('(pointer: coarse)').matches;
 
-function resize() {
-  W = canvas.width = window.innerWidth;
-  H = canvas.height = window.innerHeight;
-}
-resize();
-window.addEventListener('resize', resize);
-window.addEventListener('scroll', () => { scrollY = window.scrollY; });
+  const canvas = document.getElementById('neural-bg');
+  const ctx = canvas.getContext('2d');
+  let W, H, nodes = [], signals = [];
+  let px = -9999, py = -9999;
+  let scrollY = 0;
 
-for (let i = 0; i < 120; i++) {
-  nodes.push({
-    x: Math.random() * (typeof W !== 'undefined' ? W : window.innerWidth),
-    y: Math.random() * (typeof H !== 'undefined' ? H : window.innerHeight),
-    vx: (Math.random() - 0.5) * 0.25,
-    vy: (Math.random() - 0.5) * 0.25,
-    r: Math.random() * 3 + 1.5,
-    pulse: Math.random() * Math.PI * 2,
-    depth: Math.random() * 0.6 + 0.4
-  });
-}
+  const NODE_COUNT = isMobile ? 46 : 100;
+  const LINK_DIST = isMobile ? 150 : 210;
+  const CURSOR_RADIUS = isMobile ? 130 : 170;
+  const MAX_SIGNALS = isMobile ? 22 : 46;
 
-function drawNeural() {
-  ctx.clearRect(0, 0, W, H);
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+  window.addEventListener('scroll', () => { scrollY = window.scrollY; }, { passive: true });
 
-  const parallaxShift = scrollY * 0.08;
-
-  nodes.forEach(n => {
-    n.x += n.vx;
-    n.y += n.vy;
-    n.pulse += 0.018;
-    if (n.x < 0 || n.x > W) n.vx *= -1;
-    if (n.y < 0 || n.y > H) n.vy *= -1;
-  });
-
-  for (let i = 0; i < nodes.length; i++) {
-    for (let j = i + 1; j < nodes.length; j++) {
-      const ay = nodes[i].y - parallaxShift * nodes[i].depth;
-      const by = nodes[j].y - parallaxShift * nodes[j].depth;
-      const dx = nodes[i].x - nodes[j].x;
-      const dy = ay - by;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 220) {
-        const alpha = (1 - dist / 220) * 0.55;
-        ctx.beginPath();
-        ctx.strokeStyle = `rgba(59, 158, 255, ${alpha})`;
-        ctx.lineWidth = 0.9;
-        ctx.moveTo(nodes[i].x, ay);
-        ctx.lineTo(nodes[j].x, by);
-        ctx.stroke();
-      }
-    }
+  for (let i = 0; i < NODE_COUNT; i++) {
+    nodes.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * (prefersReduced ? 0 : 0.22),
+      vy: (Math.random() - 0.5) * (prefersReduced ? 0 : 0.22),
+      r: Math.random() * 2.6 + 1.3,
+      pulse: Math.random() * Math.PI * 2,
+      depth: Math.random() * 0.6 + 0.4,
+      activation: 0,
+      neighbors: []
+    });
   }
 
-  nodes.forEach(n => {
-    const py = n.y - parallaxShift * n.depth;
-    const pulse = 0.5 + 0.5 * Math.sin(n.pulse);
-    const grd = ctx.createRadialGradient(n.x, py, 0, n.x, py, n.r * 3);
-    grd.addColorStop(0, `rgba(0, 212, 255, ${0.5 + pulse * 0.4})`);
-    grd.addColorStop(1, `rgba(0, 212, 255, 0)`);
-    ctx.beginPath();
-    ctx.arc(n.x, py, n.r * 3, 0, Math.PI * 2);
-    ctx.fillStyle = grd;
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(n.x, py, n.r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(0, 212, 255, ${0.8 + pulse * 0.2})`;
-    ctx.fill();
+  document.addEventListener('mousemove', e => { px = e.clientX; py = e.clientY; });
+  document.addEventListener('mouseleave', () => { px = -9999; py = -9999; });
+  if (isCoarse) {
+    document.addEventListener('touchmove', e => {
+      const t = e.touches[0];
+      if (t) { px = t.clientX; py = t.clientY; }
+    }, { passive: true });
+    document.addEventListener('touchend', () => { px = -9999; py = -9999; });
+  }
+
+  function spawnSignal(a, b) {
+    if (signals.length >= MAX_SIGNALS) return;
+    signals.push({ a, b, t: 0, speed: 0.012 + Math.random() * 0.016 });
+  }
+
+  function fireNode(idx) {
+    const n = nodes[idx];
+    if (!n) return;
+    n.activation = 1;
+    n.neighbors.slice(0, 3).forEach(j => spawnSignal(idx, j));
+  }
+
+  document.addEventListener('click', e => {
+    if (prefersReduced) return;
+    let best = -1, bd = Infinity;
+    nodes.forEach((n, i) => {
+      const d = Math.hypot(n.x - e.clientX, n.y - e.clientY);
+      if (d < bd) { bd = d; best = i; }
+    });
+    if (best >= 0 && bd < 400) fireNode(best);
   });
 
-  requestAnimationFrame(drawNeural);
-}
-drawNeural();
+  let lastCascade = 0;
 
-// Scroll reveal
+  function draw(now) {
+    ctx.clearRect(0, 0, W, H);
+    const parallax = scrollY * 0.06;
+
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      n.x += n.vx; n.y += n.vy;
+      n.pulse += 0.02;
+      if (n.x < 0 || n.x > W) n.vx *= -1;
+      if (n.y < 0 || n.y > H) n.vy *= -1;
+      n.neighbors.length = 0;
+      n.activation *= 0.955;
+
+      if (px > -9000) {
+        const dx = n.x - px, dy = (n.y - parallax * n.depth) - py;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d < CURSOR_RADIUS) {
+          n.activation = Math.max(n.activation, 1 - d / CURSOR_RADIUS);
+        }
+      }
+    }
+
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const ay = nodes[i].y - parallax * nodes[i].depth;
+        const by = nodes[j].y - parallax * nodes[j].depth;
+        const dx = nodes[i].x - nodes[j].x, dy = ay - by;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < LINK_DIST) {
+          nodes[i].neighbors.push(j);
+          nodes[j].neighbors.push(i);
+          const base = 1 - dist / LINK_DIST;
+          const act = Math.max(nodes[i].activation, nodes[j].activation);
+          const alpha = Math.min(base * 0.42 + act * 0.4, 0.85);
+          ctx.beginPath();
+          ctx.strokeStyle = act > 0.4 ? `rgba(0,212,255,${alpha})` : `rgba(59,158,255,${alpha})`;
+          ctx.lineWidth = 0.8 + act * 1.1;
+          ctx.moveTo(nodes[i].x, ay);
+          ctx.lineTo(nodes[j].x, by);
+          ctx.stroke();
+        }
+      }
+    }
+
+    if (!prefersReduced && px > -9000) {
+      for (let i = 0; i < nodes.length; i++) {
+        if (nodes[i].activation > 0.65 && nodes[i].neighbors.length && Math.random() < 0.035) {
+          const j = nodes[i].neighbors[Math.floor(Math.random() * nodes[i].neighbors.length)];
+          spawnSignal(i, j);
+        }
+      }
+    }
+
+    if (!prefersReduced && now - lastCascade > 2600) {
+      lastCascade = now;
+      fireNode(Math.floor(Math.random() * nodes.length));
+    }
+
+    for (let s = signals.length - 1; s >= 0; s--) {
+      const sig = signals[s];
+      const a = nodes[sig.a], b = nodes[sig.b];
+      if (!a || !b) { signals.splice(s, 1); continue; }
+      sig.t += sig.speed;
+      if (sig.t >= 1) {
+        b.activation = Math.max(b.activation, 0.9);
+        if (Math.random() < 0.5 && b.neighbors.length) {
+          const nxt = b.neighbors[Math.floor(Math.random() * b.neighbors.length)];
+          if (nxt !== sig.a) spawnSignal(sig.b, nxt);
+        }
+        signals.splice(s, 1);
+        continue;
+      }
+      const ay = a.y - parallax * a.depth, by = b.y - parallax * b.depth;
+      const cx = a.x + (b.x - a.x) * sig.t;
+      const cy = ay + (by - ay) * sig.t;
+      const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, 6);
+      grd.addColorStop(0, 'rgba(0,229,255,0.95)');
+      grd.addColorStop(1, 'rgba(0,229,255,0)');
+      ctx.beginPath();
+      ctx.arc(cx, cy, 3.2, 0, Math.PI * 2);
+      ctx.fillStyle = grd;
+      ctx.fill();
+    }
+
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      const ny = n.y - parallax * n.depth;
+      const pulse = 0.5 + 0.5 * Math.sin(n.pulse);
+      const glowR = n.r * (3 + n.activation * 2.2);
+      const grd = ctx.createRadialGradient(n.x, ny, 0, n.x, ny, glowR);
+      grd.addColorStop(0, `rgba(0,212,255,${0.35 + pulse * 0.25 + n.activation * 0.5})`);
+      grd.addColorStop(1, 'rgba(0,212,255,0)');
+      ctx.beginPath();
+      ctx.arc(n.x, ny, glowR, 0, Math.PI * 2);
+      ctx.fillStyle = grd;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(n.x, ny, n.r + n.activation * 1.2, 0, Math.PI * 2);
+      ctx.fillStyle = n.activation > 0.5
+        ? `rgba(255,255,255,${0.75 + pulse * 0.2 + n.activation * 0.2})`
+        : `rgba(0,212,255,${0.8 + pulse * 0.2})`;
+      ctx.fill();
+    }
+
+    if (!prefersReduced) requestAnimationFrame(draw);
+  }
+
+  requestAnimationFrame(draw);
+})();
+
+// ---------- Scroll reveal ----------
 const observerOptions = { threshold: 0.15 };
 const observer = new IntersectionObserver(entries => {
   entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-    }
+    if (entry.isIntersecting) entry.target.classList.add('visible');
   });
 }, observerOptions);
 
@@ -1306,6 +1668,48 @@ document.querySelectorAll('.exp-item').forEach((el, i) => {
   el.style.transitionDelay = (i * 0.1) + 's';
 });
 
+// ---------- Nav active-section tracking ----------
+const navLinks = document.querySelectorAll('.nav-links a');
+if (navLinks.length) {
+  const navObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const link = document.querySelector(`.nav-links a[href="#${entry.target.id}"]`);
+      if (!link) return;
+      navLinks.forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+    });
+  }, { rootMargin: '-40% 0px -50% 0px', threshold: 0 });
+
+  navLinks.forEach(a => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) navObserver.observe(target);
+  });
+}
+
+// ---------- Experience timeline signal ----------
+const timeline = document.querySelector('.exp-timeline');
+const expSignal = document.getElementById('expSignal');
+let expTick = false;
+function updateExpSignal() {
+  expTick = false;
+  if (!timeline || !expSignal) return;
+  const rect = timeline.getBoundingClientRect();
+  const vh = window.innerHeight;
+  if (rect.top < vh && rect.bottom > 0) {
+    expSignal.classList.add('active');
+    const progress = Math.min(Math.max((vh * 0.6 - rect.top) / rect.height, 0), 1);
+    expSignal.style.top = (progress * rect.height) + 'px';
+  } else {
+    expSignal.classList.remove('active');
+  }
+}
+window.addEventListener('scroll', () => {
+  if (!expTick) { expTick = true; requestAnimationFrame(updateExpSignal); }
+}, { passive: true });
+updateExpSignal();
+
+// ---------- Counter animation for stats ----------
 function animCounter(el, target, isFloat, suffix, duration = 1500) {
   const decimals = target === 3.97 ? 2 : 1;
   const start = performance.now();
